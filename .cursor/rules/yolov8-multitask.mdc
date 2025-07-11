@@ -1,0 +1,189 @@
+# YOLOv11 Multi-Task Model Development Rules
+
+## Core Architecture (YOLOv11 Based)
+
+### Base Framework
+- **Use YOLOv11**: Latest Ultralytics version (not YOLOv8)
+- **Import patterns**: `from ultralytics import YOLO`
+- **Model loading**: `model = YOLO("yolo11n.pt")` for pretrained models
+- **Configuration**: Use YAML config files like `yolo11n.yaml`
+
+### Model Structure
+```python
+# Correct YOLOv11 patterns from Context7
+model = YOLO("yolo11n-seg.pt")  # For segmentation
+model = YOLO("yolo11n.yaml")    # From YAML config
+model = YOLO("yolo11n.yaml").load("yolo11n.pt")  # Load with weights
+```
+
+### Custom Model Implementation
+- Extend `DetectionModel` from ultralytics for custom heads
+- Add custom heads after standard YOLO initialization
+- Use proper weight loading with `state_dict()` checks
+
+## Training Patterns
+
+### Data Configuration
+```yaml
+# Use standard YOLO format
+path: ./data
+train: train.txt
+val: val.txt
+names:
+  0: class_name
+  # ... other classes
+```
+
+### Training API
+```python
+# Standard training pattern
+model = YOLO("yolo11n.pt")
+results = model.train(
+    data="dataset.yaml",
+    epochs=100,
+    imgsz=640,
+    batch=16
+)
+```
+
+### Custom Trainer
+- Extend `DetectionTrainer` for multi-task learning
+- Override `get_model()` method for custom architectures
+- Use `get_validator()` for custom validation
+
+## Multi-Task Architecture
+
+### Task Distribution
+- **Detection**: 40% of batch (primary task)
+- **Segmentation**: 30% of batch (secondary)
+- **Depth**: 30% of batch (custom head)
+
+### Head Implementation
+```python
+class DepthHead(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int = 1):
+        super().__init__()
+        # Use proper Conv2d sequences
+        self.depth_conv = nn.Sequential(
+            nn.Conv2d(in_channels, 128, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 64, 3, padding=1), 
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, out_channels, 1),
+            nn.Sigmoid()  # [0, 1] range
+        )
+```
+
+### Weight Loading Safety
+```python
+# Safe weight loading pattern
+if weights.endswith('.pt'):
+    checkpoint = torch.load(weights, map_location='cpu')
+    if 'model' in checkpoint:
+        pretrained_state_dict = checkpoint['model'].state_dict()
+    # Handle different checkpoint formats
+```
+
+## Loss Functions & Training
+
+### Dynamic Loss Weighting
+- Implement Kendall et al. uncertainty weighting
+- Use learnable log-variance parameters
+- Formula: `L_total = Σ(w_i * L_i + log(w_i))`
+
+### Staged Training
+1. **Phase 1**: Freeze backbone, train heads only
+2. **Phase 2**: End-to-end training with lower learning rates
+
+### Balanced Sampling
+- Ensure task ratio consistency across batches
+- Use custom batch sampler for multi-task data
+- Handle missing annotations gracefully
+
+## Optimization & Deployment
+
+### TensorRT Export
+```python
+# YOLOv11 TensorRT export
+model.export(
+    format='engine',
+    half=True,          # FP16
+    device=0,
+    workspace=4,        # 4GB
+    int8=True,          # INT8 quantization
+    data='calib.yaml'   # Calibration data
+)
+```
+
+### Performance Targets
+- **Jetson Orin Nano**: 30+ FPS at 640x640
+- **Memory**: <6GB usage
+- **Accuracy**: Detection mAP@0.5 >0.7
+
+## Data Handling
+
+### Dataset Structure
+```
+data/
+├── bbox/           # Detection annotations
+├── surface/        # Segmentation polygons  
+└── depth/          # Stereo calibration
+```
+
+### Annotation Format
+- **BBox**: CVAT XML format
+- **Surface**: Polygon coordinates
+- **Depth**: Stereo calibration (.conf files)
+
+### Class Definitions
+- **BBox**: 32 classes (person, car, pole, etc.)
+- **Surface**: 6 classes (alley, sidewalk, roadway, etc.)
+- **Depth**: Continuous disparity values
+
+## Code Quality Standards
+
+### Error Handling
+- Use try-except blocks for model loading
+- Check hasattr() before accessing model attributes
+- Provide fallback options for different model formats
+
+### Type Safety
+- Add type hints to function parameters
+- Check tensor shapes before operations
+- Validate input dimensions
+
+### Memory Management
+- Use `map_location='cpu'` for checkpoint loading
+- Clear GPU cache regularly during training
+- Monitor memory usage on Jetson
+
+## Performance Monitoring
+
+### Metrics to Track
+- **Detection**: mAP@0.5, mAP@0.75, precision, recall
+- **Segmentation**: mask mAP, IoU per class
+- **Depth**: AbsRel, RMSE, δ1 accuracy
+
+### Logging
+- Use Weights & Biases for experiment tracking
+- Log task-specific losses separately
+- Monitor gradient norms for stability
+
+## File Organization
+
+### Model Files
+- Place in `models/` directory
+- Use descriptive names: `safetrip_yolo_multitask.py`
+- Separate concerns: model, trainer, losses
+
+### Configuration Files
+- YAML configs in root or config/ directory
+- Environment-specific settings
+- Dataset configuration files
+
+### Evaluation Scripts
+- Place evaluation scripts in `mediazen/evaluation/` folder
+- Separate scripts for each task type
+- Comprehensive performance reporting
+
+This ruleset ensures consistent development practices aligned with YOLOv11 best practices and SafeTrip project requirements.

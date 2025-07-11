@@ -1,0 +1,115 @@
+# SafeTrip 멀티태스크 프로젝트 .gitignore
+
+# 데이터 폴더 (용량이 큰 실제 데이터)
+data/bbox/
+data/surface/
+data/depth/
+*.jpg
+*.jpeg
+*.png
+*.xml
+*.conf
+
+# 모델 체크포인트 및 가중치
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.pkl
+
+# 실험 결과 및 로그
+runs/
+logs/
+tensorboard_logs/
+wandb/
+*.log
+
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상환경
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# IDE 관련
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# 임시 파일
+*.tmp
+*.temp
+temp/
+tmp/
+
+# OS 관련
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 캐시 폴더
+.cache/
+cache/
+
+# 테스트 결과
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# 기타 생성 파일
+*.pdf
+*.zip
+*.tar.gz
+*.rar
+
+# 평가 결과 (evaluation 폴더는 유지하되 결과 파일만 제외)
+evaluation/results/
+evaluation/outputs/
+evaluation/*.png
+evaluation/*.jpg
+evaluation/*.pdf 
