@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Data (too large for git)
+/data/
+../data/
+data/
+*.pkl
+*.npy
+*.pth
+*.ckpt
+
+# Logs
+*.log
+logs/
+training_logs/
+nohup.out
+
+# Wandb
+wandb/
+/wandb/
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+model_weights/
+
+# Results
+results/
+outputs/
+predictions/
+*.png
+*.jpg
+*.jpeg
+
+# Temporary files
+*.tmp
+.cache/
+tmp/
+
+# Debug files
+debug_*.png
+debug_*.jpg
+
+# Config overrides (keep base configs)
+configs/*_local.yaml
+configs/*_override.yaml
+
+# Submission files
+submissions/
+*.csv
+
+# Documentation build
+docs/_build/
